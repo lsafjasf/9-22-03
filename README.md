@@ -16,6 +16,11 @@
   - Prepend / SpacingMark（GB9a/GB9b）、控制字符（GB4/GB5）等
 - **规范化**：规范等价（NFC/NFD）与兼容等价（NFKC/NFKD）；同一文本在
   规范化前后分段结果保持一致（见下"不变性"）。
+- **归一化分段管线**：`textseg.pipeline` 支持在分段前按可配置的形式
+  （NFC/NFD/NFKC/NFKD，可关闭）先归一化再分段；提供组合入口验证
+  「先归一化再分段」与「先分段再归一化」两种顺序在样例集上结果一致
+  （规范等价形式下由 UAX #29 的规范等价不变性保证）。关闭开关时
+  （`normalize_form=None`）逐例与原始分段结果完全一致。
 - **流式输入**：`StreamSegmenter` 按块喂入，只输出已确定不可撤销的段。
 - **工具**：按字形簇计数/截断、按词统计、按句拆分、按边界把长文本切成
   不超过给定字形簇数的片段。
@@ -27,6 +32,8 @@ python3 tools/gen_tables.py        # 一次性：下载 UCD 数据并生成 text
 python3 -m textseg "示例 text 👨‍👩‍👧‍👦"   # 演示
 python3 run_tests.py               # 全部自测（规则/边界/官方一致性/流式对拍）
 python3 tests/diff_stream.py       # 只跑流式 vs 整体对拍
+python3 tools/eval_boundaries.py   # 评估：官方一致性 + 多语言样本边界准确率
+                                   # + 归一化顺序不变性 + 开关关闭恒等性
 ```
 
 ## API 速览
@@ -45,6 +52,14 @@ ts.chunk_text(s, 80, prefer_word=True)  # 切成 ≤80 簇的片段，尽量在�
 ts.normalize(s, "NFC")              # NFC/NFD/NFKC/NFKD
 ts.canonical_equal(a, b)            # 规范等价
 ts.compatibility_equal(a, b)        # 兼容等价
+
+# 归一化分段管线（normalize_form=None 时与上面的原始接口逐例一致）
+ts.segment(s, "word", "NFC")        # 先归一化再分段（组合入口）
+ts.Segmenter("NFD").graphemes(s)    # 可配置分段器
+ts.normalize_then_segment(s, "word", "NFC")   # 顺序一：先归一化再分段
+ts.segment_then_normalize(s, "word", "NFC")   # 顺序二：先分段再归一化
+ts.orders_agree(s, "word", "NFC")             # 两种顺序是否一致
+ts.verify_order_invariance(texts)             # 批量验证，返回逐条报告
 
 st = ts.StreamSegmenter("grapheme") # 或 "word" / "sentence"
 segs = st.feed(chunk)               # 返回新确定的段

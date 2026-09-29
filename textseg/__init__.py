@@ -34,6 +34,17 @@ from .normalize import (
     canonical_equal,
     compatibility_equal,
 )
+from .pipeline import (
+    KINDS,
+    InvarianceResult,
+    Segmenter,
+    break_positions,
+    segment,
+    normalize_then_segment,
+    segment_then_normalize,
+    orders_agree,
+    verify_order_invariance,
+)
 from .stream import StreamSegmenter, grapheme_stream, word_stream, sentence_stream
 from .utils import grapheme_count, truncate_graphemes, chunk_text
 
@@ -61,6 +72,15 @@ __all__ = [
     "is_normalized",
     "canonical_equal",
     "compatibility_equal",
+    "KINDS",
+    "InvarianceResult",
+    "Segmenter",
+    "break_positions",
+    "segment",
+    "normalize_then_segment",
+    "segment_then_normalize",
+    "orders_agree",
+    "verify_order_invariance",
     "StreamSegmenter",
     "grapheme_stream",
     "word_stream",
